@@ -1,19 +1,26 @@
 # Technical Interview Practice Coach 🚀
 
-A modern, responsive web application designed to help software engineering candidates prepare for technical interviews at top technology companies (TCS, Infosys, Wipro, Accenture, and more) with real-time AI evaluation, scoring out of 10, in-depth feedback, and model answers.
+A modern, responsive conversational AI mock interview application designed to prepare software engineering candidates for technical rounds at top technology companies (TCS, Infosys, Wipro, Accenture, and more). Powered by a production n8n Cloud webhook workflow with live AI evaluation, scoring out of 10, in-depth feedback, model answers, and end-of-session performance analytics.
 
 ---
 
 ## ✨ Features
 
-- **Company-Specific Targeting**: Tailored for top companies including TCS, Infosys, Wipro, Accenture, or any custom organization.
-- **Real-Time AI Evaluation Engine**: Evaluates answers live using a production n8n Cloud webhook workflow.
-- **Objective Scoring (0–10)**: Dynamic animated SVG radial gauge color-coded with calibrated performance badges (*Exceptional*, *Strong*, *Moderate*, *Needs Work*).
-- **In-Depth Technical Feedback**: Identifies strengths, omissions, and conceptual depth.
-- **Actionable Improvements List**: Clear, numbered action items highlighting key concepts, nuances, and edge cases to mention.
-- **Ideal Model Answer**: Senior-level reference answers with a one-click copy-to-clipboard button.
-- **1-Click Quick Presets**: Pre-loaded questions across Java, SQL, OOP, and REST APIs for instant testing.
-- **Responsive Dark Navy & Electric Blue Theme**: Polished interface with smooth transitions and subtle animations for desktop, laptop, and mobile devices.
+### 1. Conversational AI Mock Interview Mode (Primary)
+- **Comprehensive Interview Setup**: Choose target company, job role (SDE, Frontend, Backend, Full Stack, Data, DevOps, QA, etc.), topic, difficulty level (Easy, Medium, Hard), and question count (5, 10, or 15).
+- **Automated AI Questioning**: The AI interviewer asks questions one-by-one automatically—no need to enter your own questions.
+- **Real-Time Step-by-Step Evaluation**: After submitting each answer, receive an instant objective score (0–10), targeted feedback, actionable improvement points, and a model answer.
+- **Session Progress Tracking**: Dynamic question progress bar (e.g., Question 1 of 5) with word/character counter and empty-submission guards.
+- **Interview History Drawer**: Expandable transcript drawer to review previous questions, answers, and scores during the live interview.
+- **End-of-Interview Performance Report**:
+  - Total and average score out of 10 with animated radial gauge.
+  - Calibrated performance tier (*Offer Bar / Exceptional*, *Strong*, *Developing*, *Needs Core Revision*).
+  - Aggregate strengths and high-priority focus areas.
+  - Question-by-question breakdown with copyable ideal solutions.
+  - Retake and restart controls.
+
+### 2. Single Question Evaluator Mode (Preserved Feature)
+- Evaluate standalone practice questions with preset questions (TCS Java, Infosys SQL, Wipro OOP, Accenture REST APIs) or custom questions.
 
 ---
 
@@ -22,38 +29,68 @@ A modern, responsive web application designed to help software engineering candi
 - **Framework**: [React 19](https://react.dev/)
 - **Bundler**: [Vite](https://vite.dev/)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Styling**: Modern CSS3 (Variables, Flexbox, Grid, Glassmorphism, Keyframe animations)
-- **AI Automation**: [n8n Cloud](https://n8n.io/) Webhook Workflow
+- **Styling**: Modern CSS3 (Variables, Glassmorphism, Grid, Flexbox, Keyframe animations)
+- **AI Backend**: [n8n Cloud](https://n8n.io/) Webhook Workflow
 
 ---
 
-## 🔌 API Integration
+## 🔌 n8n Dual-Action Webhook Contract
 
-Answers are evaluated via a POST request to the n8n webhook:
-
+The application connects to the production webhook:
 - **Endpoint**: `https://sowdarya.app.n8n.cloud/webhook/interview-coach`
 - **Method**: `POST`
-- **Payload**:
-  ```json
-  {
-    "company": "TCS",
-    "topic": "Java",
-    "question": "What is the difference between String, StringBuilder, and StringBuffer in Java?",
-    "answer": "..."
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "success": true,
-    "company": "TCS",
-    "topic": "Java",
-    "score": 8,
-    "feedback": "...",
-    "idealAnswer": "...",
-    "improvements": ["...", "..."]
-  }
-  ```
+
+### 1. Question Generation (`action: "generate_question"`)
+```json
+{
+  "action": "generate_question",
+  "company": "TCS",
+  "role": "Frontend Developer",
+  "topic": "React & Frontend",
+  "difficulty": "Medium",
+  "questionNumber": 1,
+  "totalQuestions": 5,
+  "previousQuestions": []
+}
+```
+**Expected Response**:
+```json
+{
+  "success": true,
+  "question": "Explain how React reconciliation and the Virtual DOM diffing algorithm operate under the hood."
+}
+```
+*(The frontend includes an intelligent contextual fallback question bank, ensuring seamless operation even if the online n8n workflow has not yet added the generator branch).*
+
+### 2. Answer Evaluation (`action: "evaluate_answer"`)
+```json
+{
+  "action": "evaluate_answer",
+  "company": "TCS",
+  "role": "Frontend Developer",
+  "topic": "React & Frontend",
+  "difficulty": "Medium",
+  "question": "Explain how React reconciliation and the Virtual DOM diffing algorithm operate under the hood.",
+  "answer": "React creates a lightweight virtual DOM tree and compares it with the previous tree using diffing heuristics...",
+  "questionNumber": 1,
+  "totalQuestions": 5
+}
+```
+**Response Format**:
+```json
+{
+  "success": true,
+  "company": "TCS",
+  "topic": "React & Frontend",
+  "score": 8,
+  "feedback": "The answer accurately describes virtual DOM comparison...",
+  "idealAnswer": "React uses the Fiber reconciliation engine to perform incremental rendering...",
+  "improvements": [
+    "Mention the two main phases (render/reconciliation and commit).",
+    "Explain key-based heuristic diffing for list items."
+  ]
+}
+```
 
 ---
 
@@ -61,28 +98,22 @@ Answers are evaluated via a POST request to the n8n webhook:
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [Node.js](https://nodejs.org/) (v18 or higher)
 - [npm](https://www.npmjs.com/)
 
-### Installation
+### Installation & Run
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Gobinath1008/Technical-Interview-Practice-Coach.git
-   cd Technical-Interview-Practice-Coach
-   ```
-
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Start the development server:
+2. Start development server:
    ```bash
    npm run dev
    ```
 
-4. Build for production:
+3. Build for production:
    ```bash
    npm run build
    ```
